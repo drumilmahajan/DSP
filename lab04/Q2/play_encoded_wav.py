@@ -57,7 +57,7 @@ stream = p.open(format      = pyaudio.get_format_from_width(width),
                 output      = True )
 
 # Read first frame
-input_string = wf.readframes(1)          
+input_string = wf.readframes(1)   
 
 encoding_format = ''
 if width == 1: 
@@ -89,6 +89,7 @@ while input_string != '':
 
     # Get next frame
     input_string = wf.readframes(1)
+    
 
 print("**** Done ****")
 
