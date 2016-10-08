@@ -15,22 +15,27 @@ def clip16( x ):
     else:
         x = x        
     return int(x)
-
-
-
 wavfile = 'author.wav'
+output = 'Filter_d_output.wav'
 # wavfile = 'sin01_mono.wav'
 
 print("Play the wave file %s." % wavfile)
 
 # Open wave file (should be mono channel)
 wf = wave.open( wavfile, 'rb' )
+# Open wave file to be written to. 
+wf_out = wave.open(output , 'w')
 
 # Read the wave file properties
 num_channels = wf.getnchannels()       	# Number of channels
 RATE = wf.getframerate()                # Sampling rate (frames/second)
 signal_length  = wf.getnframes()       	# Signal length
 width = wf.getsampwidth()       		# Number of bytes per sample
+
+# Set parameters for the output file 
+wf_out.setnchannels(num_channels)
+wf_out.setsampwidth(width)
+wf_out.setframerate(RATE)
 
 print("The file has %d channel(s)."            % num_channels)
 print("The frame rate is %d frames/second."    % RATE)
@@ -83,8 +88,6 @@ while input_string != '':
 
     y0 = b0*w0 + b2*w2 + b4*w4 
 
-   
-
     # Delays
     w4 = w3
     w3 = w2
@@ -98,7 +101,10 @@ while input_string != '':
     output_string = struct.pack('h', output_value)  
 
     # Write binary string to audio stream
-    stream.write(output_string)                     
+    stream.write(output_string)       
+
+    #Writing to the audio file
+    wf_out.writeframes(output_string)               
 
     # Get next frame
     input_string = wf.readframes(1)

@@ -2,7 +2,6 @@
 %% Load wave file
 
 [x, Fs] = audioread('author.wav');
-
 N = length(x);
 n = 1:N;
 t = n/Fs;
@@ -49,10 +48,34 @@ xlabel('Frequency (Hz)')
 xlim([0 3000])
 title('Frequency response')
 
+%% Impulse response
+
+L = 300;
+imp = [1 zeros(1, L)];
+h = filter(b, a, imp);
+
+figure(1)
+clf
+stem(0:L, h)
+xlabel('Discrete time (n)')
+title('Impulse response')
+
+%%
+
+figure(1)
+clf
+plot((0:L)/Fs, h)
+xlabel('Time (sec)')
+title('Impulse response')
 
 %% Apply filter to speech signal
 
+% bandpass filter output of bandstop filter using Directform bandstop
+
 y = filter(b, a, x);
+
+%% Plotting two signals. One which is filtered by matlab and one which is filtered using Filter_c.py
+
 
 figure(1)
 clf
@@ -64,10 +87,6 @@ zoom xon
 %% Write output signal to wave file
 
 audiowrite('output_matlab.wav', y, Fs);
-
-
-
-%%
 
 sound(y, Fs)
 

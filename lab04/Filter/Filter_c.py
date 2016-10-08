@@ -19,7 +19,10 @@ def clip16( x ):
 
 
 wavfile = 'author.wav'
+output = 'Filter_c_output.wav'
 # wavfile = 'sin01_mono.wav'
+# Open wave file to be written to. 
+wf_out = wave.open(output , 'w')
 
 print("Play the wave file %s." % wavfile)
 
@@ -31,6 +34,12 @@ num_channels = wf.getnchannels()       	# Number of channels
 RATE = wf.getframerate()                # Sampling rate (frames/second)
 signal_length  = wf.getnframes()       	# Signal length
 width = wf.getsampwidth()       		# Number of bytes per sample
+
+# Set parameters for the output file 
+wf_out.setnchannels(num_channels)
+wf_out.setsampwidth(width)
+wf_out.setframerate(RATE)
+
 
 print("The file has %d channel(s)."            % num_channels)
 print("The frame rate is %d frames/second."    % RATE)
@@ -65,7 +74,7 @@ p = pyaudio.PyAudio()
 
 # Open audio stream
 stream = p.open(format      = pyaudio.paInt16,
-                channels    = 2,
+                channels    = num_channels,
                 rate        = RATE,
                 input       = False,
                 output      = True )
@@ -83,7 +92,7 @@ while input_string != '':
     x0 = input_value
 
     # Difference equation
-    y0 = b0*x0 + b2*x2 + b4*x4 - a1*y1 - a2*y2 - a3*y3 - a4*y4 
+    y0 = b0*x0 + b1*x1 + b2*x2 + b3*x3 + b4*x4 - a1*y1 - a2*y2 - a3*y3 - a4*y4 
 
     # Delays
     x4 = x3
@@ -99,16 +108,19 @@ while input_string != '':
     output_value = clip16(y0)    # Number
 
     # Convert output value to binary string
-    output_string = struct.pack('hh', output_value, x0)  
+    output_string = struct.pack('h', output_value)  
 
     # Write binary string to audio stream
-    stream.write(output_string)                     
+    stream.write(output_string) 
+
+    #Writing to the audio file  
+    wf_out.writeframes(output_string)                    
 
     # Get next frame
     input_string = wf.readframes(1)
 
 print("**** Done ****")
-
+wf_out.close()
 stream.stop_stream()
 stream.close()
 p.terminate()
