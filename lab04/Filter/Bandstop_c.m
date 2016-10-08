@@ -74,7 +74,7 @@ title('Impulse response')
 
 y = filter(b, a, x);
 
-%% Plotting two signals. One which is filtered by matlab and one which is filtered using Filter_c.py
+%% Plotting the input and the output signal
 
 
 figure(1)
@@ -84,16 +84,7 @@ xlabel('Time (sec)')
 title('Speech signal and filtered speech signal')
 zoom xon
 
-%% Write output signal to wave file
 
-audiowrite('output_matlab.wav', y, Fs);
-
-sound(y, Fs)
-
-%% 
-format long
-b'
-a'
 
 
 
