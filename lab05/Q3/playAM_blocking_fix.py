@@ -2,11 +2,11 @@
 # Play a mono wave file with amplitude modulation. 
 # This implementation reads and plays a block at a time (blocking)
 # and corrects for block-to-block angle mismatch.
-# Assignment: modify this file so it works for both mono and stereo wave files
-#  (where does this file have an error when wave file is stereo and why? )
+# Modified by Drumil Mahajan as a part of course work. 
 
 # f0 = 0      # Normal audio
-f0 = 400    # 'Duck' audio
+f0 = 800    # 'Duck' audio
+f1 = 100
 
 BLOCKSIZE = 64      # Number of frames per block
 
@@ -15,67 +15,79 @@ import struct
 import wave
 import math
 
-# Open wave file (mono)
-wave_file_name = 'author.wav'
-# wave_file_name = 'sin01_mono.wav'
-# wave_file_name = 'sin01_stereo.wav'
-wf = wave.open( wave_file_name, 'rb')
-RATE = wf.getframerate()
-WIDTH = wf.getsampwidth()
-LEN = wf.getnframes() 
-CHANNELS = wf.getnchannels() 
+WIDTH = 2           # Number of bytes per sample
+CHANNELS = 1        # mono
+RATE = 16000        # Sampling rate (frames/second)
+DURATION = 10        # duration of processing (seconds)
+LEN = DURATION*RATE   # N : Number of samples to process
 
-print 'The sampling rate is {0:d} samples per second'.format(RATE)
-print 'Each sample is {0:d} bytes'.format(WIDTH)
-print 'The signal is {0:d} samples long'.format(LEN)
-print 'The signal has {0:d} channel(s)'.format(CHANNELS)
+def clip16( x ):    
+    # Clipping for 16 bits
+    if x > 32767:
+        x = 32767
+    elif x < -32768:
+        x = -32768
+    else:
+        x = x        
+    return int(x)
+
 
 # Open audio stream
 p = pyaudio.PyAudio()
 stream = p.open(format = p.get_format_from_width(WIDTH),
-                channels = 1,
+                channels = CHANNELS,
+                rate = RATE,
+                input = True,
+                output = False)
+
+stream_out =  p.open(format = p.get_format_from_width(WIDTH),
+                channels = 2,
                 rate = RATE,
                 input = False,
                 output = True)
+                
 
 # Create block (initialize to zero)
-output_block = [0 for n in range(0, BLOCKSIZE)]
+output_block = [0 for n in range(0, 2*BLOCKSIZE)]
 
-# Number of blocks in wave file
+# Number of blocks in DURATION
 num_blocks = int(math.floor(LEN/BLOCKSIZE))
 
 # Initialize angle
 theta = 0.0
+theta1 = 0.0
 
 # Block-to-block angle increment
 theta_del = (float(BLOCKSIZE*f0)/RATE - math.floor(BLOCKSIZE*f0/RATE)) * 2.0 * math.pi
+theta_del1 = (float(BLOCKSIZE*f1)/RATE - math.floor(BLOCKSIZE*f1/RATE)) * 2.0 * math.pi
 
 print('* Playing...')
 
-# Go through wave file 
+# Go through the input from mic for time = DURATION
 for i in range(0, num_blocks):
 
-    # Get block of samples from wave file
-    input_string = wf.readframes(BLOCKSIZE)     # BLOCKSIZE = number of frames read
+     # Get BLOCKSIZE number of frames from audio input (microphone)
+    input_string = stream.read(BLOCKSIZE)
 
-    # Convert binary string to tuple of numbers    
-    input_tuple = struct.unpack('h' * BLOCKSIZE, input_string)
-            # (h: two bytes per sample (WIDTH = 2))
+    # Convert binary string to tuple of numbers
+    input_tuple = struct.unpack('h'*BLOCKSIZE, input_string)
 
     # Go through block
     for n in range(0, BLOCKSIZE):
         # Amplitude modulation  (f0 Hz cosine)
-        output_block[n] = input_tuple[n] * math.cos(2*math.pi*n*f0/RATE + theta)
+        output_block[2*n] = clip16( input_tuple[n] * math.cos(2*math.pi*n*f0/RATE + theta) )
+        output_block[2*n+1] = clip16( input_tuple[n] * math.cos(2*math.pi*n*f1/RATE + theta1) )
         # output_block[n] = input_tuple[n] * 1.0  # for no processing
 
     # Set angle for next block
     theta = theta + theta_del
+    theta1 = theta1 + theta_del1
 
     # Convert values to binary string
-    output_string = struct.pack('h' * BLOCKSIZE, *output_block)
+    output_string = struct.pack('h' * 2 * BLOCKSIZE, *output_block)
 
     # Write binary string to audio output stream
-    stream.write(output_string)
+    stream_out.write(output_string)
 
 print('* Done')
 
