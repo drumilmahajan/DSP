@@ -5,8 +5,8 @@
 # Modified by Drumil Mahajan as a part of course work. 
 
 # f0 = 0      # Normal audio
-f0 = 800    # 'Duck' audio
-f1 = 100
+f0 = 2000    # 'Duck' audio
+f1 = 1000
 
 BLOCKSIZE = 64      # Number of frames per block
 
@@ -31,6 +31,17 @@ def clip16( x ):
         x = x        
     return int(x)
 
+fileName = "Stereo.wav"
+
+# Opening wave file to be written
+wavOut = wave.open(fileName , 'w')
+print("Writing in the wave file %s " % fileName)
+
+
+# Set parameters for the output file 
+wavOut.setnchannels(2)
+wavOut.setsampwidth(WIDTH)
+wavOut.setframerate(RATE)
 
 # Open audio stream
 p = pyaudio.PyAudio()
@@ -40,11 +51,6 @@ stream = p.open(format = p.get_format_from_width(WIDTH),
                 input = True,
                 output = False)
 
-stream_out =  p.open(format = p.get_format_from_width(WIDTH),
-                channels = 2,
-                rate = RATE,
-                input = False,
-                output = True)
                 
 
 # Create block (initialize to zero)
@@ -87,7 +93,7 @@ for i in range(0, num_blocks):
     output_string = struct.pack('h' * 2 * BLOCKSIZE, *output_block)
 
     # Write binary string to audio output stream
-    stream_out.write(output_string)
+    wavOut.writeframes(output_string)
 
 print('* Done')
 
