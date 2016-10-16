@@ -11,7 +11,7 @@ from myfunctions import clip16
 WIDTH = 2           # Number of bytes per sample
 CHANNELS = 1        # mono
 RATE = 16000        # Sampling rate (frames/second)
-DURATION = 10        # duration of processing (seconds)
+DURATION = 4        # duration of processing (seconds)
 
 N = DURATION*RATE   # N : Number of samples to process
 
@@ -41,13 +41,13 @@ p = pyaudio.PyAudio()
 fileName = "DrumilMahajan.wav"
 
 # Opening wave file to be written
-wavOut = wave.open(filename , 'w')
-print("Writing in the wave file %s", %filename)
+wavOut = wave.open(fileName , 'w')
+print("Writing in the wave file %s " % fileName)
 
 #Set parameters to the output file
 # Set parameters for the output file 
-wavOut.setnchannels(num_channels)
-wavOut.setsampwidth(width)
+wavOut.setnchannels(CHANNELS)
+wavOut.setsampwidth(WIDTH)
 wavOut.setframerate(RATE)
 
 # Open audio stream
