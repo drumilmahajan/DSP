@@ -44,7 +44,7 @@ fileName = "DrumilMahajan.wav"
 wavOut = wave.open(fileName , 'w')
 print("Writing in the wave file %s " % fileName)
 
-#Set parameters to the output file
+
 # Set parameters for the output file 
 wavOut.setnchannels(CHANNELS)
 wavOut.setsampwidth(WIDTH)
@@ -88,8 +88,6 @@ for n in range(0, N):
 
     # Compute output value
     output_value = clip16(y0)    # Number
-
-    output_value = clip16(x0)   # Bypass filter (listen to input directly)
 
     # Convert output value to binary string
     output_string = struct.pack('h', output_value)  
