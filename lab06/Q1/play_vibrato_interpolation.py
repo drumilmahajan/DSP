@@ -1,5 +1,9 @@
+# Modified by Drumil Mahajan
+# New York University
+# October 2016
+
 # play_vibrato_ver2.py
-# Reads a specified wave file (mono) and plays it with a vibrato effect.
+# Reads input from microphone and plays it with different vibrato effect on left and right channel.
 # (Sinusoidal time-varying delay)
 # This implementation uses a circular buffer with two buffer indices.
 # Uses linear interpolation
