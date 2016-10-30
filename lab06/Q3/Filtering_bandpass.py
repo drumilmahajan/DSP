@@ -4,7 +4,7 @@
 # Plots the real time output of the waveform.
 # reads blocks of data and process it at once. 
 # plots the left and right channel. 
-
+# Original file by Gerald Schuller, October 2013
 # Modified by Drumil Mahajan
 # Oct, 2016, New York University
 
@@ -15,6 +15,9 @@ import math
 from math import sin, cos, pi
 from matplotlib import pyplot as plt
 import pylab
+import numpy as np
+import matplotlib
+matplotlib.use('GTKAgg') 
 
 
 def clip16( x ):    
@@ -57,18 +60,33 @@ numBlocks = int(math.floor(signal_length/BLOCKSIZE)) # Total number of blocks in
 output_block = [0 for n in range(0, 2 * BLOCKSIZE)] # output block, initialized to zero. size twice in BLOCKSIZE to store the original input and filtered output
 output_data = [0 for n in range(0, BLOCKSIZE)]
 input_data  = [0 for n in range(0, BLOCKSIZE)]
-# Setting up the figure/plot and turning of interative mode. 
 
-plt.ion()           # Turn on interactive mode so plot gets updated
+# Creating line space , N points from 0 to BLOCKSIZE
+n = np.linspace(0, BLOCKSIZE-1, BLOCKSIZE)
+
+# Setting up the figure/plot and turning of interative mode. 
+plt.ion() # Turn on interactive mode so plot gets updated
+
 fig = plt.figure(1)
+
+input_plot = plt.subplot(2, 1, 1)
+input_plot.set_title('INPUT PLOT')
 line_in, = plt.plot(input_data)
-line_out, = plt.plot(output_data)
-plt.ylim(-32000, 32000)
-plt.xlim(0, BLOCKSIZE)
-plt.xlabel('Time (n)')
+plt.ylim(-164000, 164000)
+plt.xlim(-100, BLOCKSIZE)
 plt.show()
 
-# Difference equation coefficients
+
+output_plot = plt.subplot(2, 1, 2)
+output_plot.set_title('OUTPUT PLOT')
+line_out, = plt.plot(output_data)
+plt.ylim(-164000, 164000)
+plt.xlim(-100, BLOCKSIZE)
+plt.show()
+
+
+
+# Difference equation coefficients for bandpass filter 500-100 Hz. 
 b0 =  0.008442692929081
 b2 = -0.016885385858161
 b4 =  0.008442692929081
@@ -126,15 +144,24 @@ for i in range(0, numBlocks):
         y3 = y2
         y2 = y1
         y1 = y0
-
+        
+        # Writing left and right channel in output block
         output_block[2*n] = clip16(y0)
         output_block[2*n + 1] = x0
-        output_data[n] = clip16(y0-10000)
-        input_data[n] = x0 + 10000
+        
+        # Creating to speperate lists to store filtered output and the input data
+        output_data[n] = clip16(y0)
+        input_data[n] = x0 
 
-    line_in.set_ydata(input_data)
-    line_out.set_ydata(output_data)
-    plt.pause(0.001)
+    
+    # Taking fft of input data and the output data
+    in_fft = np.fft.fft(list(input_tuple))
+    out_fft = np.fft.fft(output_data)
+
+    # Update the plot with spectrum of current block
+    line_in.set_ydata(in_fft.real)
+    line_out.set_ydata(out_fft.real)
+    plt.pause(0.0001)
 
     # Convert output value to binary string
     output_string = struct.pack('h'* 2 * BLOCKSIZE, *output_block)  
