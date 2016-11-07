@@ -83,7 +83,7 @@ print("**** Start ****")
 input_string = wf.readframes(1)
 
 f1 = 400
-n = 0
+#n = 0
 for n in range(0, N):
 #while input_string != '':
     
@@ -120,9 +120,9 @@ for n in range(0, N):
     y1 = y0
     
     power = 1j*2*(math.pi)*f1*n/16000
-    #z = y0 * cmath.exp(power)
-    z = 0.0 + 0.0j
-    z = y0 * (math.cos(2*(math.pi)*f1*n/16000))
+    z = y0 * cmath.exp(power)
+    #z = 0.0 + 0.0j
+    #z = y0 * (math.cos(2*(math.pi)*f1*n/16000))
     # g = r .* exp( I * 2 * pi * f1 * t );  
    
     stream.write(struct.pack('h', clip16(z.real)))  
